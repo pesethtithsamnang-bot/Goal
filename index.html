@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKETING</title>
+<meta name="theme-color" content="#F59E0B">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+<link rel="apple-touch-icon" href="assets/logo.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+<svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="sketing-logo" viewBox="0 0 100 100">
+    <rect width="80" height="80" x="10" y="10" rx="20" fill="#F59E0B" />
+    <path d="M30 50 L45 65 L70 35" stroke="#FFFFFF" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  </symbol>
+</svg>
+
+<!-- ===================== AUTH SCREEN ===================== -->
+<div id="authScreen" class="wrap">
+  <div class="card">
+    <svg class="mascot"><use href="#sketing-logo"></use></svg>
+    <h2 id="authHeading">Welcome back</h2>
+    <p class="sub" id="authSub">Log in to your private SKETING app</p>
+    <div class="field"><label>Email</label><input type="email" id="authEmail" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input type="password" id="authPassword" autocomplete="current-password"></div>
+    <button class="btn btn-orange btn-block" id="authSubmitBtn">Log in</button>
+    <div id="authMsg"></div>
+    <div class="auth-toggle" id="authToggle">New here? <a id="authToggleLink">Create an account</a></div>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div id="appScreen" class="wrap">
+  <div class="app-header">
+    <div class="app-header-left">
+      <svg class="mascot"><use href="#sketing-logo"></use></svg>
+      <div class="app-title"><h1>SKETING</h1><p>Goals · Finance · Schedule · Work · Todos</p></div>
+    </div>
+    <div class="userbar">
+      <span id="userEmail"></span>
+      <button class="btn btn-grey btn-sm" id="signOutBtn">Sign out</button>
+    </div>
+  </div>
+
+  <div class="tab-row">
+    <div class="segmented" id="mainTabs">
+      <button data-panel="goals" class="active">Goals</button>
+      <button data-panel="finance">Finance</button>
+      <button data-panel="schedule">Schedule</button>
+      <button data-panel="work">Work</button>
+      <button data-panel="todos">Todos</button>
+      <button data-panel="settings">Settings</button>
+    </div>
+    <button class="btn btn-orange" id="addBtn">+ Add</button>
+  </div>
+
+  <!-- ---------- GOALS ---------- -->
+  <div class="panel active" id="panel-goals">
+    <div class="segmented" style="margin-bottom:16px;">
+      <button data-goaltab="active" class="active">In progress</button>
+      <button data-goaltab="short">Short-term</button>
+      <button data-goaltab="long">Long-term</button>
+      <button data-goaltab="completed">Completed</button>
+    </div>
+    <div class="goal-grid" id="goalGrid"></div>
+    <div class="empty-state hidden" id="goalEmpty"><h3>No goals here</h3><p>Tap "+ Add" to create a short-term or long-term goal. Link a short-term goal to a long-term one and it'll feed its progress automatically.</p></div>
+  </div>
+
+  <!-- ---------- FINANCE ---------- -->
+  <div class="panel" id="panel-finance">
+    <div class="finance-dashboard">
+      <div class="stat-box"><div class="stat-label">Income (Mo)</div><div class="stat-val val-pos" id="finIncMo">$0</div></div>
+      <div class="stat-box"><div class="stat-label">Expenses (Mo)</div><div class="stat-val val-neg" id="finExpMo">$0</div></div>
+      <div class="stat-box"><div class="stat-label">Net Savings (Mo)</div><div class="stat-val" id="finNetMo">$0</div></div>
+    </div>
+    <div class="finance-dashboard" style="margin-bottom:24px;">
+      <div class="stat-box"><div class="stat-label">Income (Yr)</div><div class="stat-val val-pos" id="finIncYr">$0</div></div>
+      <div class="stat-box"><div class="stat-label">Expenses (Yr)</div><div class="stat-val val-neg" id="finExpYr">$0</div></div>
+      <div class="stat-box"><div class="stat-label">Net Savings (Yr)</div><div class="stat-val" id="finNetYr">$0</div></div>
+    </div>
+
+    <div style="margin-bottom:24px;padding:18px;" class="card">
+      <h3 style="margin:0 0 12px;font-size:16px;">Account Balances</h3>
+      <div class="finance-dashboard" id="finAcctBalances" style="margin-bottom:0;"></div>
+    </div>
+
+    <div style="margin-bottom:24px;padding:18px;" class="card">
+      <h3 style="margin:0 0 12px;font-size:16px;">Monthly Expenses by Category</h3>
+      <div id="finCategoryBreakdown" style="font-size:14px;"></div>
+    </div>
+
+    <div class="fin-filters">
+      <div class="type-toggle" id="finTypeFilter">
+        <button type="button" data-v="all" class="active">All</button>
+        <button type="button" data-v="income">Income</button>
+        <button type="button" data-v="expense">Expense</button>
+        <button type="button" data-v="transfer">Transfer</button>
+      </div>
+      <select id="finAccountFilter"><option value="all">All accounts</option></select>
+      <select id="finPeriodMode">
+        <option value="all">All time</option>
+        <option value="day">Day</option>
+        <option value="month">Month</option>
+        <option value="year">Year</option>
+      </select>
+      <input type="date" id="finPeriodDay" class="hidden">
+      <input type="month" id="finPeriodMonth" class="hidden">
+      <input type="number" id="finPeriodYear" class="hidden" min="2000" max="2100" placeholder="e.g. 2026" style="width:100px;">
+    </div>
+
+    <div class="fin-table-wrap" id="finTableWrap">
+      <table class="fin-table" id="finTable">
+        <thead>
+          <tr>
+            <th data-sort="entry_date">Date</th>
+            <th data-sort="entry_time">Time</th>
+            <th data-sort="type">Type</th>
+            <th data-sort="account">Account</th>
+            <th data-sort="category">Category</th>
+            <th data-sort="note">Note</th>
+            <th data-sort="amount" style="text-align:right;">Amount</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="finTableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state hidden" id="finNoResults"><h3>No matching entries</h3><p>Try a different filter.</p></div>
+    <div class="empty-state hidden" id="financeEmpty"><h3>No entries yet</h3><p>Start tracking your income, expenses, and transfers between accounts. Income can be linked to a long-term savings goal.</p></div>
+  </div>
+
+  <!-- ---------- SCHEDULE ---------- -->
+  <div class="panel" id="panel-schedule">
+    <div class="sched-list" id="schedList"></div>
+    <div class="empty-state hidden" id="schedEmpty"><h3>Nothing scheduled yet</h3><p>Add anything with a start date, an optional end date (deadline), and a time — from a single meeting to a plan spanning months or years.</p></div>
+  </div>
+
+  <!-- ---------- WORK ---------- -->
+  <div class="panel" id="panel-work">
+    <div class="card" style="margin-bottom:18px;padding:0;overflow:hidden;">
+      <div id="nowWorkingBlock" class="now-working hidden">
+        <div class="job" id="nowJobName"></div>
+        <div class="timer" id="nowTimer">00:00:00</div>
+        <div class="since" id="nowSince"></div>
+        <button class="btn btn-red" id="stopWorkBtn">Stop work</button>
+      </div>
+      <div id="startWorkBlock" class="start-row">
+        <input type="text" id="newJobInput" placeholder="What job / task are you starting?">
+        <button class="btn btn-orange" id="startWorkBtn">Start work</button>
+      </div>
+    </div>
+    <h3 style="margin:0 0 12px;">History</h3>
+    <div class="session-list" id="sessionList"></div>
+    <div class="empty-state hidden" id="sessionEmpty"><h3>No sessions logged yet</h3><p>Start work above to begin tracking your time.</p></div>
+  </div>
+
+  <!-- ---------- TODOS ---------- -->
+  <div class="panel" id="panel-todos">
+    <div class="add-todo-row">
+      <input type="text" id="newTodoInput" placeholder="Add a todo and press Enter...">
+      <button class="btn btn-blue" id="addTodoBtn">Add</button>
+    </div>
+    <div class="todo-list" id="todoList"></div>
+    <div class="empty-state hidden" id="todoEmpty"><h3>Nothing to do — nice</h3><p>Add a todo above to keep track of small steps. Tap "Edit" on any todo to give it an optional due date and time.</p></div>
+  </div>
+
+  <!-- ---------- SETTINGS ---------- -->
+  <div class="panel" id="panel-settings">
+    <div class="settings-section card">
+      <h3><i data-lucide="wallet" class="ic"></i> Accounts</h3>
+      <p class="field-hint" style="margin-bottom:14px;">Moving money between your own accounts (e.g. Bank → Savings) is a transfer — it never counts as an expense.</p>
+      <div class="settings-add-row">
+        <input type="text" id="newAcctInput" placeholder="New account name (e.g. Emergency Fund)">
+        <button class="btn btn-blue" id="acctAddBtn">Add</button>
+      </div>
+      <div class="settings-list" id="acctList"></div>
+    </div>
+
+    <div class="settings-section card">
+      <h3><i data-lucide="tags" class="ic"></i> Categories</h3>
+      <div class="type-toggle" id="settingsCatToggle" style="margin-bottom:14px;">
+        <button type="button" data-v="expense" class="active">Expense</button>
+        <button type="button" data-v="income">Income</button>
+      </div>
+      <div class="settings-add-row">
+        <input type="text" id="newCatInput" placeholder="New category name">
+        <button class="btn btn-blue" id="catAddBtn">Add</button>
+      </div>
+      <div class="settings-list" id="catList2"></div>
+    </div>
+  </div>
+</div>
+
+<button class="fab" id="fabAddBtn">+</button>
+
+<!-- ===================== GOAL MODAL ===================== -->
+<div class="modal-overlay" id="goalModalOverlay">
+  <div class="modal">
+    <h2 id="goalModalHeading">New goal</h2>
+    <div class="field"><label>What's the goal?</label><input type="text" id="gTitle" maxlength="80">
+      <div class="field-error hidden" id="gErrTitle">Give your goal a name.</div></div>
+    <div class="field"><label>Type</label>
+      <div class="type-toggle"><button type="button" data-v="short" class="active">Short-term</button><button type="button" data-v="long">Long-term</button></div>
+    </div>
+    <div class="date-row">
+      <div class="field"><label>Start date</label><input type="date" id="gStart"></div>
+      <div class="field"><label>Deadline</label><input type="date" id="gDeadline">
+        <div class="field-error hidden" id="gErrDate">Deadline must be after start.</div></div>
+    </div>
+    <div class="field" id="gParentField"><label>Link to a long-term goal (optional)</label>
+      <select id="gParentGoal"><option value="">— None —</option></select>
+      <div class="field-hint">Completing this feeds progress into the long-term goal.</div>
+    </div>
+    <div class="field hidden" id="gTargetField"><label>Savings target (optional)</label>
+      <input type="number" id="gTargetAmount" step="0.01" min="0" placeholder="e.g. 5000">
+      <div class="field-hint">If set, progress auto-tracks from income entries linked to this goal.</div>
+    </div>
+    <div class="field"><label>Progress: <span id="gProgressVal">0%</span></label>
+      <input type="range" id="gProgress" min="0" max="100" value="0" style="accent-color:var(--orange);width:100%;"></div>
+    <div class="field"><label>Remark / notes (optional)</label><textarea id="gNotes" maxlength="300" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-grey" id="gCancelBtn">Cancel</button>
+      <button class="btn btn-orange" id="gSaveBtn">Save goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCHEDULE MODAL ===================== -->
+<div class="modal-overlay" id="schedModalOverlay">
+  <div class="modal">
+    <h2 id="schedModalHeading">New schedule item</h2>
+    <div class="field"><label>Title</label><input type="text" id="sTitle" maxlength="80">
+      <div class="field-error hidden" id="sErrTitle">Give it a name.</div></div>
+    <div class="field"><label>App / place (optional)</label>
+      <input type="text" id="sAppName" placeholder="Zoom, Gym, School..." list="appList">
+      <datalist id="appList"><option value="Zoom"><option value="Google Meet"><option value="Gym"><option value="School"><option value="Work"></datalist>
+    </div>
+    <div class="date-row">
+      <div class="field"><label>Start date</label><input type="date" id="sStartDate"></div>
+      <div class="field"><label>End date / deadline (optional)</label><input type="date" id="sEndDate">
+        <div class="field-error hidden" id="sErrDate">End date must be after start.</div></div>
+    </div>
+    <div class="field-hint" style="margin:-8px 0 12px;">Leave end date empty for a single day. Set it days, months, or years ahead for a range with a deadline.</div>
+    <div class="date-row">
+      <div class="field"><label>Start time (optional)</label><input type="time" id="sStartTime"></div>
+      <div class="field"><label>End time (optional)</label><input type="time" id="sEndTime"></div>
+    </div>
+    <div class="field"><label>Remark / notes (optional)</label><input type="text" id="sNotes"></div>
+    <div class="modal-actions">
+      <button class="btn btn-grey" id="sCancelBtn">Cancel</button>
+      <button class="btn btn-orange" id="sSaveBtn">Save item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TODO MODAL ===================== -->
+<div class="modal-overlay" id="todoModalOverlay">
+  <div class="modal">
+    <h2 id="todoModalHeading">Edit todo</h2>
+    <div class="field"><label>Title</label><input type="text" id="tTitle" maxlength="120">
+      <div class="field-error hidden" id="tErrTitle">Give it a name.</div></div>
+    <div class="date-row">
+      <div class="field"><label>Due date (optional)</label><input type="date" id="tDueDate"></div>
+      <div class="field"><label>Due time (optional)</label><input type="time" id="tDueTime"></div>
+    </div>
+    <div class="field"><label>Notes (optional)</label><textarea id="tNotes" maxlength="300" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-grey" id="tCancelBtn">Cancel</button>
+      <button class="btn btn-orange" id="tSaveBtn">Save todo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FINANCE MODAL ===================== -->
+<div class="modal-overlay" id="finModalOverlay">
+  <div class="modal">
+    <h2 id="finModalHeading">New entry</h2>
+    <div class="field"><label>Type</label>
+      <div class="type-toggle">
+        <button type="button" data-v="expense" class="active">Expense</button>
+        <button type="button" data-v="income">Income</button>
+        <button type="button" data-v="transfer">Transfer</button>
+      </div>
+    </div>
+    <div class="field"><label>Amount</label><input type="number" id="fAmount" step="0.01" min="0">
+      <div class="field-error hidden" id="fErrAmount">Enter an amount.</div></div>
+    <div class="field" id="fCategoryField"><label>Category</label>
+      <input type="text" id="fCategory" placeholder="Food, Rent, Salary..." list="catList">
+      <datalist id="catList"></datalist>
+      <div class="field-error hidden" id="fErrCategory">Enter a category.</div>
+    </div>
+    <div class="date-row">
+      <div class="field"><label id="fAccountLabel">Account</label>
+        <select id="fAccount"></select>
+      </div>
+      <div class="field hidden" id="fToAccountField"><label>To account</label>
+        <select id="fToAccount"></select>
+      </div>
+    </div>
+    <div class="date-row">
+      <div class="field"><label>Date</label><input type="date" id="fDate"></div>
+      <div class="field"><label>Time (optional)</label><input type="time" id="fTime"></div>
+    </div>
+    <div class="field hidden" id="fGoalLinkField"><label>Link to a savings goal (optional)</label>
+      <select id="fGoalLink"><option value="">— None —</option></select>
+    </div>
+    <div class="checkbox-row"><input type="checkbox" id="fRecurring"><label for="fRecurring" style="margin:0;">Recurring, starts on a future date</label></div>
+    <div class="field hidden" id="fActiveFromField"><label>Starts counting from</label>
+      <input type="date" id="fActiveFrom">
+      <div class="field-hint">Won't be included in totals until this date arrives — then it counts every month.</div>
+    </div>
+    <div class="field"><label>Remark / note (optional)</label><input type="text" id="fNote"></div>
+    <div class="modal-actions">
+      <button class="btn btn-grey" id="fCancelBtn">Cancel</button>
+      <button class="btn btn-orange" id="fSaveBtn">Save entry</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

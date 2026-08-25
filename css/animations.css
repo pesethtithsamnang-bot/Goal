@@ -1,0 +1,14 @@
+.panel{opacity:1;transform:translateY(0);}
+.panel.panel-leaving{opacity:1;}
+.panel.panel-entering{display:block;opacity:0;transform:translateY(6px);}
+.panel.panel-entering.panel-entered{opacity:1;transform:translateY(0);transition:opacity .18s ease, transform .18s ease;}
+
+/* fade the OLD panel out first via a wrapper the router toggles */
+.panel-fade-out{animation:sk-fade-out .12s ease forwards;}
+.panel-fade-in{animation:sk-fade-in .18s ease forwards;}
+@keyframes sk-fade-out{ to{ opacity:0; transform:translateY(-4px); } }
+@keyframes sk-fade-in{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+
+.modal-overlay .modal{will-change:transform;}
+.goal-card,.todo-item,.sched-card,.session-card,.finance-item{animation:sk-pop .18s ease;}
+@keyframes sk-pop{ from{opacity:0; transform:scale(.97);} to{opacity:1; transform:scale(1);} }

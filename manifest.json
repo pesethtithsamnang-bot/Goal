@@ -1,0 +1,12 @@
+{
+  "name": "SKETING",
+  "short_name": "SKETING",
+  "description": "Goals, Finance, Schedule, Work & Todos in one place",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F7F7F7",
+  "theme_color": "#F59E0B",
+  "icons": [
+    { "src": "assets/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

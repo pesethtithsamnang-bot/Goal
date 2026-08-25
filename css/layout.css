@@ -1,0 +1,65 @@
+/* ---- header ---- */
+.app-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+.app-header-left{display:flex;align-items:center;gap:14px;}
+.mascot{width:56px;height:56px;flex-shrink:0;}
+.app-title h1{font-weight:800;font-size:26px;color:var(--orange-deep);}
+.app-title p{margin:2px 0 0;color:var(--ink-soft);font-weight:700;font-size:13px;}
+.userbar{display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;color:var(--ink-soft);}
+
+/* ---- auth screen ---- */
+#authScreen{max-width:380px;margin:60px auto;}
+#authScreen .card{text-align:center;}
+#authScreen .mascot{width:70px;height:70px;margin:0 auto 10px;}
+#authScreen h2{font-size:22px;margin-bottom:4px;}
+#authScreen p.sub{color:var(--ink-soft);font-weight:700;font-size:13.5px;margin:0 0 18px;}
+.auth-toggle{margin-top:14px;font-size:13.5px;font-weight:700;color:var(--ink-soft);}
+.auth-toggle a{color:var(--blue-dark);cursor:pointer;text-decoration:none;}
+#authMsg{font-size:13px;font-weight:700;margin-top:10px;min-height:18px;}
+#authMsg.err{color:var(--red);}
+#authMsg.ok{color:var(--orange-deep);}
+
+/* ---- tabs ---- */
+.tab-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.segmented{display:flex;background:var(--grey-card);border:2px solid var(--grey-border);border-radius:999px;padding:4px;gap:4px;flex-wrap:wrap;}
+.segmented button{border:none;background:transparent;font-family:var(--font-display);font-weight:700;font-size:14px;
+  color:var(--ink-soft);padding:9px 16px;border-radius:999px;cursor:pointer;transition:all .15s ease;}
+.segmented button.active{background:var(--orange);color:var(--white);}
+
+/* ---- panels (see animations.css for transition classes) ---- */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* ---- generic grids ---- */
+.goal-grid,.todo-list,.sched-list,.session-list,.finance-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.todo-list,.sched-list,.session-list,.finance-list{grid-template-columns:1fr;}
+
+.empty-state{text-align:center;padding:50px 20px;color:var(--ink-soft);}
+.empty-state h3{color:var(--ink);font-size:19px;margin:0 0 6px;}
+.empty-state p{margin:0;font-weight:600;}
+
+.fab{position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:var(--orange);color:white;
+  font-size:28px;font-weight:800;border:none;box-shadow:0 5px 0 var(--orange-deep);cursor:pointer;
+  display:none;align-items:center;justify-content:center;z-index:50;}
+.fab.show{display:flex;}
+
+#appScreen{display:none;}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 640px){
+  .wrap{padding:16px 14px 0;}
+  .app-title h1{font-size:22px;}
+  .mascot{width:46px;height:46px;}
+  .tab-row{flex-direction:column;align-items:stretch;}
+  .tab-row #addBtn{display:none !important;} /* use FAB instead on mobile */
+  .segmented{justify-content:center;}
+  .segmented button{padding:8px 12px;font-size:13px;}
+  .goal-grid{grid-template-columns:1fr;}
+  .finance-dashboard{grid-template-columns:repeat(2,1fr) !important;}
+  .fin-filters .type-toggle{min-width:0;width:100%;}
+  .fin-filters select,.fin-filters input{flex:1;}
+  .modal{padding:20px;}
+  body{padding-bottom:90px;}
+}
+@media (min-width: 641px){
+  .fab{display:none !important;}
+}

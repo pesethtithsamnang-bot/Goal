@@ -1,0 +1,54 @@
+:root{
+  --orange:#F59E0B;--orange-dark:#D97706;--orange-deep:#B45309;--orange-bg:#FEF3C7;
+  --blue:#1CB0F6;--blue-dark:#1899D6;--blue-bg:#DDF4FF;
+  --yellow:#FFC800;--yellow-dark:#E5AC00;--yellow-bg:#FFF3C4;
+  --red:#FF4B4B;--red-dark:#E33E3E;
+  --purple:#CE82FF;--purple-dark:#A568CC;--purple-bg:#F1E1FF;
+  --green:#22C55E;--green-dark:#16A34A;--green-bg:#DCFCE7;
+  --grey-bg:#F7F7F7;--grey-card:#FFFFFF;--grey-border:#E5E5E5;--grey-line:#D8D8D8;
+  --ink:#3C3C3C;--ink-soft:#777777;--white:#FFFFFF;
+  --radius-lg:20px;--radius-md:16px;--radius-sm:12px;
+  --font-display:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{background:var(--grey-bg);font-family:var(--font-body);color:var(--ink);min-height:100vh;padding-bottom:40px;}
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px 0;}
+h1,h2,h3,h4{font-family:var(--font-display);margin:0;}
+.hidden{display:none !important;}
+.ic{width:14px;height:14px;stroke-width:2.5;vertical-align:-2px;display:inline-block;}
+.icon-inline{display:inline-flex;align-items:center;gap:4px;}
+
+/* ---- buttons ---- */
+.btn{font-family:var(--font-display);font-weight:700;font-size:15px;border:none;border-radius:var(--radius-sm);
+  cursor:pointer;padding:12px 20px;color:var(--white);box-shadow:0 4px 0 var(--shadow-color,#B45309);
+  transition:transform .04s ease, box-shadow .04s ease;white-space:nowrap;}
+.btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--shadow-color,#B45309);}
+.btn-orange{background:var(--orange);--shadow-color:var(--orange-deep);}
+.btn-blue{background:var(--blue);--shadow-color:var(--blue-dark);}
+.btn-purple{background:var(--purple);--shadow-color:var(--purple-dark);}
+.btn-green{background:var(--green);--shadow-color:var(--green-dark);}
+.btn-grey{background:#EFEFEF;color:var(--ink-soft);--shadow-color:#CFCFCF;}
+.btn-red{background:var(--red);--shadow-color:var(--red-dark);}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:10px;box-shadow:0 3px 0 var(--shadow-color,#B45309);}
+.btn-sm:active{box-shadow:0 0 0 var(--shadow-color,#B45309);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.btn-block{width:100%;}
+
+/* ---- shared card ---- */
+.card{background:var(--grey-card);border:2px solid var(--grey-border);border-radius:var(--radius-lg);padding:18px;}
+
+/* ---- form fields ---- */
+.field{margin-bottom:14px;}
+.field label{display:block;font-weight:800;font-size:12.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border-radius:12px;border:2px solid var(--grey-border);
+  font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--ink);background:var(--grey-bg);}
+.field textarea{resize:vertical;min-height:60px;font-weight:600;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);}
+.field-error{color:var(--red);font-size:12.5px;font-weight:700;margin-top:5px;}
+.field-hint{color:var(--ink-soft);font-size:12px;font-weight:600;margin-top:4px;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:white;
+  padding:13px 22px;border-radius:14px;font-family:var(--font-display);font-weight:700;font-size:14px;opacity:0;
+  transition:all .25s ease;pointer-events:none;z-index:400;max-width:90vw;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
