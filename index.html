@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quest Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  :root{
+    --green:#58CC02;--green-dark:#4CAD02;--green-deep:#3E9200;--green-bg:#D7FFB8;
+    --blue:#1CB0F6;--blue-dark:#1899D6;--blue-bg:#DDF4FF;
+    --yellow:#FFC800;--yellow-dark:#E5AC00;--yellow-bg:#FFF3C4;
+    --red:#FF4B4B;--red-dark:#E33E3E;
+    --purple:#CE82FF;--purple-dark:#A568CC;--purple-bg:#F1E1FF;
+    --grey-bg:#F7F7F7;--grey-card:#FFFFFF;--grey-border:#E5E5E5;--grey-line:#D8D8D8;
+    --ink:#3C3C3C;--ink-soft:#777777;--white:#FFFFFF;
+    --radius-lg:20px;--radius-md:16px;--radius-sm:12px;
+    --font-display:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--grey-bg);font-family:var(--font-body);color:var(--ink);min-height:100vh;padding-bottom:60px;}
+  .wrap{max-width:960px;margin:0 auto;padding:24px 20px 0;}
+  h1,h2,h3{font-family:var(--font-display);}
+
+  /* header */
+  .app-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+  .app-header-left{display:flex;align-items:center;gap:14px;}
+  .mascot{width:56px;height:56px;flex-shrink:0;}
+  .app-title h1{font-weight:800;font-size:26px;margin:0;color:var(--green-deep);}
+  .app-title p{margin:2px 0 0;color:var(--ink-soft);font-weight:700;font-size:13px;}
+  .userbar{display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;color:var(--ink-soft);}
+
+  /* buttons */
+  .btn{font-family:var(--font-display);font-weight:700;font-size:15px;border:none;border-radius:var(--radius-sm);
+    cursor:pointer;padding:12px 20px;color:var(--white);box-shadow:0 4px 0 var(--shadow-color,#3E9200);
+    transition:transform .04s ease, box-shadow .04s ease;white-space:nowrap;}
+  .btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--shadow-color,#3E9200);}
+  .btn-green{background:var(--green);--shadow-color:var(--green-deep);}
+  .btn-blue{background:var(--blue);--shadow-color:var(--blue-dark);}
+  .btn-purple{background:var(--purple);--shadow-color:var(--purple-dark);}
+  .btn-grey{background:#EFEFEF;color:var(--ink-soft);--shadow-color:#CFCFCF;}
+  .btn-red{background:var(--red);--shadow-color:var(--red-dark);}
+  .btn-sm{padding:8px 14px;font-size:13px;border-radius:10px;box-shadow:0 3px 0 var(--shadow-color,#3E9200);}
+  .btn-sm:active{box-shadow:0 0 0 var(--shadow-color,#3E9200);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-block{width:100%;}
+
+  /* card / inputs shared */
+  .card{background:var(--grey-card);border:2px solid var(--grey-border);border-radius:var(--radius-lg);padding:18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-weight:800;font-size:12.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+  .field input,.field select,.field textarea{width:100%;padding:11px 13px;border-radius:12px;border:2px solid var(--grey-border);
+    font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--ink);background:var(--grey-bg);}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);}
+  .field-error{color:var(--red);font-size:12.5px;font-weight:700;margin-top:5px;}
+
+  /* auth screen */
+  #authScreen{max-width:380px;margin:60px auto;}
+  #authScreen .card{text-align:center;}
+  #authScreen .mascot{width:70px;height:70px;margin:0 auto 10px;}
+  #authScreen h2{margin:0 0 4px;font-size:22px;}
+  #authScreen p.sub{color:var(--ink-soft);font-weight:700;font-size:13.5px;margin:0 0 18px;}
+  .auth-toggle{margin-top:14px;font-size:13.5px;font-weight:700;color:var(--ink-soft);}
+  .auth-toggle a{color:var(--blue-dark);cursor:pointer;text-decoration:none;}
+  #authMsg{font-size:13px;font-weight:700;margin-top:10px;min-height:18px;}
+  #authMsg.err{color:var(--red);}
+  #authMsg.ok{color:var(--green-deep);}
+
+  /* tabs */
+  .tab-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+  .segmented{display:flex;background:var(--grey-card);border:2px solid var(--grey-border);border-radius:999px;padding:4px;gap:4px;flex-wrap:wrap;}
+  .segmented button{border:none;background:transparent;font-family:var(--font-display);font-weight:700;font-size:14px;
+    color:var(--ink-soft);padding:9px 16px;border-radius:999px;cursor:pointer;transition:all .15s ease;}
+  .segmented button.active{background:var(--green);color:var(--white);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* goal grid (reuses earlier design) */
+  .goal-grid,.todo-list,.sched-list,.session-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+  .todo-list,.sched-list,.session-list{grid-template-columns:1fr;}
+
+  .goal-card,.todo-item,.sched-card,.session-card{background:var(--grey-card);border:2px solid var(--grey-border);
+    border-radius:var(--radius-lg);padding:18px;display:flex;flex-direction:column;gap:12px;position:relative;}
+  .goal-card.completed{border-color:var(--green);background:var(--green-bg);}
+  .goal-card.overdue:not(.completed){border-color:var(--red);}
+  .goal-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .badge{font-family:var(--font-display);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+    padding:4px 10px;border-radius:999px;}
+  .badge.short{background:var(--blue-bg);color:var(--blue-dark);}
+  .badge.long{background:var(--yellow-bg);color:var(--yellow-dark);}
+  .badge.weekly{background:var(--blue-bg);color:var(--blue-dark);}
+  .badge.monthly{background:var(--purple-bg);color:var(--purple-dark);}
+  .badge.yearly{background:var(--yellow-bg);color:var(--yellow-dark);}
+  .goal-title{font-weight:700;font-size:18px;margin:0;color:var(--ink);line-height:1.25;}
+  .goal-card.completed .goal-title{color:var(--green-deep);}
+  .goal-dates{display:flex;gap:14px;font-size:12.5px;color:var(--ink-soft);font-weight:700;flex-wrap:wrap;}
+  .progress-outer{background:#E5E5E5;border-radius:999px;height:16px;overflow:hidden;}
+  .progress-inner{height:100%;background:var(--green);border-radius:999px;transition:width .35s cubic-bezier(.34,1.56,.64,1);}
+  .goal-card.overdue:not(.completed) .progress-inner{background:var(--red);}
+  .progress-pct{font-weight:800;font-size:13px;}
+  .progress-controls input[type=range]{width:100%;accent-color:var(--green);}
+  .goal-actions,.item-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .completed-check{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;
+    background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;}
+  .ic{width:14px;height:14px;stroke-width:2.5;vertical-align:-2px;display:inline-block;}
+  .completed-check .ic{width:16px;height:16px;stroke-width:3;}
+  .todo-check .ic{width:15px;height:15px;stroke-width:3;}
+  .icon-inline{display:inline-flex;align-items:center;gap:4px;}
+
+  /* todos */
+  .todo-item{flex-direction:row;align-items:center;padding:14px 18px;}
+  .todo-check{width:26px;height:26px;border-radius:8px;border:2px solid var(--grey-line);flex-shrink:0;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:white;}
+  .todo-check.done{background:var(--green);border-color:var(--green);}
+  .todo-body{flex:1;min-width:0;}
+  .todo-title{font-weight:700;font-size:15.5px;}
+  .todo-item.done .todo-title{text-decoration:line-through;color:var(--ink-soft);}
+  .todo-due{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  .add-todo-row{display:flex;gap:10px;margin-bottom:16px;}
+  .add-todo-row input{flex:1;}
+
+  /* schedule */
+  .sched-card{flex-direction:row;align-items:center;justify-content:space-between;padding:16px 18px;}
+  .sched-info{display:flex;flex-direction:column;gap:4px;}
+  .sched-time{font-size:13px;color:var(--ink-soft);font-weight:700;}
+  .sched-next{font-size:12px;color:var(--blue-dark);font-weight:800;}
+
+  /* work sessions */
+  .now-working{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:26px;}
+  .now-working .job{font-weight:800;font-size:22px;color:var(--green-deep);}
+  .now-working .timer{font-family:var(--font-display);font-size:34px;font-weight:800;color:var(--ink);}
+  .now-working .since{font-size:12.5px;color:var(--ink-soft);font-weight:700;}
+  .start-row{display:flex;gap:10px;padding:20px;}
+  .start-row input{flex:1;}
+  .session-card{flex-direction:row;align-items:center;justify-content:space-between;padding:14px 18px;}
+  .session-job{font-weight:700;}
+  .session-time{font-size:12.5px;color:var(--ink-soft);font-weight:700;}
+  .session-dur{font-weight:800;color:var(--blue-dark);}
+
+  .empty-state{text-align:center;padding:50px 20px;color:var(--ink-soft);}
+  .empty-state h3{color:var(--ink);font-size:19px;margin:0 0 6px;}
+  .empty-state p{margin:0;font-weight:600;}
+
+  /* modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(60,60,60,.45);display:flex;align-items:center;justify-content:center;
+    z-index:100;padding:20px;opacity:0;pointer-events:none;transition:opacity .15s ease;}
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal{background:var(--white);border-radius:24px;padding:26px;width:100%;max-width:420px;
+    box-shadow:0 10px 0 var(--grey-line);transform:translateY(12px);transition:transform .15s ease;max-height:90vh;overflow-y:auto;}
+  .modal-overlay.open .modal{transform:translateY(0);}
+  .date-row{display:flex;gap:10px;}
+  .date-row .field{flex:1;}
+  .type-toggle{display:flex;gap:8px;}
+  .type-toggle button{flex:1;padding:10px;border-radius:12px;border:2px solid var(--grey-border);background:var(--grey-bg);
+    font-family:var(--font-display);font-weight:700;font-size:13px;cursor:pointer;color:var(--ink-soft);}
+  .type-toggle button.active[data-v="short"],.type-toggle button.active[data-v="weekly"]{background:var(--blue-bg);border-color:var(--blue);color:var(--blue-dark);}
+  .type-toggle button.active[data-v="long"],.type-toggle button.active[data-v="yearly"]{background:var(--yellow-bg);border-color:var(--yellow-dark);color:var(--yellow-dark);}
+  .type-toggle button.active[data-v="monthly"]{background:var(--purple-bg);border-color:var(--purple-dark);color:var(--purple-dark);}
+  .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .modal-actions .btn{flex:1;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:white;
+    padding:13px 22px;border-radius:14px;font-family:var(--font-display);font-weight:700;font-size:14px;opacity:0;
+    transition:all .25s ease;pointer-events:none;z-index:200;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .fab{position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:var(--green);color:white;
+    font-size:28px;font-weight:800;border:none;box-shadow:0 5px 0 var(--green-deep);cursor:pointer;
+    display:none;align-items:center;justify-content:center;}
+  .fab.show{display:flex;}
+
+  #appScreen{display:none;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<!-- ===================== AUTH SCREEN ===================== -->
+<div id="authScreen" class="wrap">
+  <div class="card">
+    <svg class="mascot" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="55" r="38" fill="#58CC02"/>
+      <circle cx="34" cy="45" r="13" fill="#fff"/><circle cx="66" cy="45" r="13" fill="#fff"/>
+      <circle cx="34" cy="45" r="6" fill="#3C3C3C"/><circle cx="66" cy="45" r="6" fill="#3C3C3C"/>
+      <path d="M43 63 Q50 70 57 63" stroke="#3C3C3C" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M50 32 L42 20 L58 20 Z" fill="#FFC800"/>
+    </svg>
+    <h2 id="authHeading">Welcome back</h2>
+    <p class="sub" id="authSub">Log in to your private Quest Log</p>
+    <div class="field"><label>Email</label><input type="email" id="authEmail" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input type="password" id="authPassword" autocomplete="current-password"></div>
+    <button class="btn btn-green btn-block" id="authSubmitBtn">Log in</button>
+    <div id="authMsg"></div>
+    <div class="auth-toggle" id="authToggle">New here? <a id="authToggleLink">Create an account</a></div>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div id="appScreen" class="wrap">
+  <div class="app-header">
+    <div class="app-header-left">
+      <svg class="mascot" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="55" r="38" fill="#58CC02"/>
+        <circle cx="34" cy="45" r="13" fill="#fff"/><circle cx="66" cy="45" r="13" fill="#fff"/>
+        <circle cx="34" cy="45" r="6" fill="#3C3C3C"/><circle cx="66" cy="45" r="6" fill="#3C3C3C"/>
+        <path d="M43 63 Q50 70 57 63" stroke="#3C3C3C" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M50 32 L42 20 L58 20 Z" fill="#FFC800"/>
+      </svg>
+      <div class="app-title"><h1>Quest Log</h1><p>Goals · Schedule · Work · Todos</p></div>
+    </div>
+    <div class="userbar">
+      <span id="userEmail"></span>
+      <button class="btn btn-grey btn-sm" id="signOutBtn">Sign out</button>
+    </div>
+  </div>
+
+  <div class="tab-row">
+    <div class="segmented" id="mainTabs">
+      <button data-panel="goals" class="active">Goals</button>
+      <button data-panel="schedule">Schedule</button>
+      <button data-panel="work">Work</button>
+      <button data-panel="todos">Todos</button>
+    </div>
+    <button class="btn btn-green" id="addBtn">+ Add</button>
+  </div>
+
+  <!-- ---------- GOALS PANEL ---------- -->
+  <div class="panel active" id="panel-goals">
+    <div class="segmented" style="margin-bottom:16px;">
+      <button data-goaltab="active" class="active">In progress</button>
+      <button data-goaltab="short">Short-term</button>
+      <button data-goaltab="long">Long-term</button>
+      <button data-goaltab="completed">Completed</button>
+    </div>
+    <div class="goal-grid" id="goalGrid"></div>
+    <div class="empty-state hidden" id="goalEmpty"><h3>No goals here</h3><p>Tap "+ Add" to create a short-term or long-term goal.</p></div>
+  </div>
+
+  <!-- ---------- SCHEDULE PANEL ---------- -->
+  <div class="panel" id="panel-schedule">
+    <div class="sched-list" id="schedList"></div>
+    <div class="empty-state hidden" id="schedEmpty"><h3>No recurring items yet</h3><p>Add something weekly, monthly, or yearly you want to keep track of.</p></div>
+  </div>
+
+  <!-- ---------- WORK PANEL ---------- -->
+  <div class="panel" id="panel-work">
+    <div class="card" style="margin-bottom:18px;padding:0;overflow:hidden;">
+      <div id="nowWorkingBlock" class="now-working hidden">
+        <div class="job" id="nowJobName"></div>
+        <div class="timer" id="nowTimer">00:00:00</div>
+        <div class="since" id="nowSince"></div>
+        <button class="btn btn-red" id="stopWorkBtn">Stop work</button>
+      </div>
+      <div id="startWorkBlock" class="start-row">
+        <input type="text" id="newJobInput" placeholder="What job / task are you starting?">
+        <button class="btn btn-green" id="startWorkBtn">Start work</button>
+      </div>
+    </div>
+    <h3 style="margin:0 0 12px;">History</h3>
+    <div class="session-list" id="sessionList"></div>
+    <div class="empty-state hidden" id="sessionEmpty"><h3>No sessions logged yet</h3><p>Start work above to begin tracking your time.</p></div>
+  </div>
+
+  <!-- ---------- TODOS PANEL ---------- -->
+  <div class="panel" id="panel-todos">
+    <div class="add-todo-row">
+      <input type="text" id="newTodoInput" placeholder="Add a todo and press Enter...">
+      <button class="btn btn-blue" id="addTodoBtn">Add</button>
+    </div>
+    <div class="todo-list" id="todoList"></div>
+    <div class="empty-state hidden" id="todoEmpty"><h3>Nothing to do — nice</h3><p>Add a todo above to keep track of small steps.</p></div>
+  </div>
+</div>
+
+<button class="fab" id="fabAddBtn">+</button>
+
+<!-- ===================== GOAL MODAL ===================== -->
+<div class="modal-overlay" id="goalModalOverlay">
+  <div class="modal">
+    <h2 id="goalModalHeading">New goal</h2>
+    <div class="field"><label>What's the goal?</label><input type="text" id="gTitle" maxlength="80">
+      <div class="field-error hidden" id="gErrTitle">Give your goal a name.</div></div>
+    <div class="field"><label>Type</label>
+      <div class="type-toggle"><button type="button" data-v="short" class="active">Short-term</button><button type="button" data-v="long">Long-term</button></div>
+    </div>
+    <div class="date-row">
+      <div class="field"><label>Start date</label><input type="date" id="gStart"></div>
+      <div class="field"><label>Deadline</label><input type="date" id="gDeadline">
+        <div class="field-error hidden" id="gErrDate">Deadline must be after start.</div></div>
+    </div>
+    <div class="field"><label>Progress: <span id="gProgressVal">0%</span></label>
+      <input type="range" id="gProgress" min="0" max="100" value="0" style="accent-color:#58CC02;width:100%;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-grey" id="gCancelBtn">Cancel</button>
+      <button class="btn btn-green" id="gSaveBtn">Save goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCHEDULE MODAL ===================== -->
+<div class="modal-overlay" id="schedModalOverlay">
+  <div class="modal">
+    <h2>New schedule item</h2>
+    <div class="field"><label>Title</label><input type="text" id="sTitle" maxlength="80">
+      <div class="field-error hidden" id="sErrTitle">Give it a name.</div></div>
+    <div class="field"><label>Repeats</label>
+      <div class="type-toggle">
+        <button type="button" data-v="weekly" class="active">Weekly</button>
+        <button type="button" data-v="monthly">Monthly</button>
+        <button type="button" data-v="yearly">Yearly</button>
+      </div>
+    </div>
+    <div class="field hidden" id="sWeeklyField"><label>Day of week</label>
+      <select id="sDayOfWeek">
+        <option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option>
+        <option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option>
+      </select>
+    </div>
+    <div class="date-row hidden" id="sMonthlyField">
+      <div class="field"><label>Day of month</label><input type="number" id="sDayOfMonth" min="1" max="31" value="1"></div>
+    </div>
+    <div class="date-row hidden" id="sYearlyField">
+      <div class="field"><label>Month</label>
+        <select id="sMonth">
+          <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Apr</option>
+          <option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Aug</option>
+          <option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+        </select></div>
+      <div class="field"><label>Day</label><input type="number" id="sYearDay" min="1" max="31" value="1"></div>
+    </div>
+    <div class="field"><label>Time (optional)</label><input type="time" id="sTime"></div>
+    <div class="field"><label>Notes (optional)</label><input type="text" id="sNotes"></div>
+    <div class="modal-actions">
+      <button class="btn btn-grey" id="sCancelBtn">Cancel</button>
+      <button class="btn btn-green" id="sSaveBtn">Save item</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   1) CONFIGURE THIS with your own Supabase project values
+   Settings -> API in your Supabase dashboard
+========================================================= */
+const SUPABASE_URL = 'https://xliuuthzdnxyxguggmec.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsaXV1dGh6ZG54eXhndWdnbWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MTQxNjYsImV4cCI6MjEwMzE5MDE2Nn0.7uELBFKKN2o3Ho3JarDnyDeRVg6HJBmheEReSmtFxTI';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let session = null;
+let goals = [], todos = [], schedules = [], sessions = [];
+let goalTab = 'active';
+let editingGoalId = null;
+let goalFormType = 'short';
+let schedFormType = 'weekly';
+let deleteArmed = {};
+let timerInterval = null;
+
+const $ = (id) => document.getElementById(id);
+function showToast(msg){
+  $('toast').textContent = msg;
+  $('toast').classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>$('toast').classList.remove('show'), 2200);
+}
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); if(isNaN(dt)) return d;
+  return dt.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
+
+/* ================= AUTH ================= */
+let authMode = 'signin';
+function toggleAuthMode(){
+  authMode = authMode === 'signin' ? 'signup' : 'signin';
+  $('authHeading').textContent = authMode === 'signin' ? 'Welcome back' : 'Create your account';
+  $('authSub').textContent = authMode === 'signin' ? 'Log in to your private Quest Log' : 'This becomes your private, permanent Quest Log';
+  $('authSubmitBtn').textContent = authMode === 'signin' ? 'Log in' : 'Create account';
+  $('authToggle').innerHTML = authMode === 'signin'
+    ? 'New here? <a id="authToggleLink">Create an account</a>'
+    : 'Already have an account? <a id="authToggleLink">Log in</a>';
+  document.getElementById('authToggleLink').addEventListener('click', toggleAuthMode);
+  $('authMsg').textContent=''; $('authMsg').className='';
+}
+$('authToggleLink').addEventListener('click', toggleAuthMode);
+
+$('authSubmitBtn').addEventListener('click', async ()=>{
+  const email = $('authEmail').value.trim();
+  const password = $('authPassword').value;
+  const msg = $('authMsg');
+  if(!email || !password){ msg.textContent='Enter an email and password.'; msg.className='err'; return; }
+  $('authSubmitBtn').disabled = true;
+  try{
+    if(authMode === 'signin'){
+      const {error} = await sb.auth.signInWithPassword({email, password});
+      if(error) throw error;
+    } else {
+      const {error} = await sb.auth.signUp({email, password});
+      if(error) throw error;
+      msg.textContent = 'Account created — check your email if confirmation is required, then log in.';
+      msg.className='ok';
+    }
+  }catch(e){
+    msg.textContent = e.message || 'Something went wrong.';
+    msg.className = 'err';
+  }
+  $('authSubmitBtn').disabled = false;
+});
+
+$('signOutBtn').addEventListener('click', async ()=>{ await sb.auth.signOut(); });
+
+sb.auth.onAuthStateChange((event, sess)=>{
+  session = sess;
+  if(session){
+    $('authScreen').classList.add('hidden');
+    $('appScreen').style.display = 'block';
+    $('userEmail').textContent = session.user.email;
+    loadAll();
+    startTimerLoop();
+  } else {
+    $('authScreen').classList.remove('hidden');
+    $('appScreen').style.display = 'none';
+    clearInterval(timerInterval);
+  }
+});
+
+/* ================= LOAD ================= */
+async function loadAll(){
+  await Promise.all([loadGoals(), loadTodos(), loadSchedules(), loadSessions()]);
+}
+
+async function loadGoals(){
+  const {data, error} = await sb.from('goals').select('*').order('created_at', {ascending:false});
+  if(!error) goals = data || [];
+  renderGoals();
+}
+async function loadTodos(){
+  const {data, error} = await sb.from('todos').select('*').order('created_at', {ascending:false});
+  if(!error) todos = data || [];
+  renderTodos();
+}
+async function loadSchedules(){
+  const {data, error} = await sb.from('schedules').select('*').order('created_at', {ascending:false});
+  if(!error) schedules = data || [];
+  renderSchedules();
+}
+async function loadSessions(){
+  const {data, error} = await sb.from('work_sessions').select('*').order('start_time', {ascending:false});
+  if(!error) sessions = data || [];
+  renderWork();
+}
+
+/* ================= TABS ================= */
+document.getElementById('mainTabs').addEventListener('click', (e)=>{
+  if(e.target.tagName !== 'BUTTON') return;
+  document.querySelectorAll('#mainTabs button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  const p = e.target.dataset.panel;
+  document.querySelectorAll('.panel').forEach(el=>el.classList.remove('active'));
+  $('panel-'+p).classList.add('active');
+  $('addBtn').style.display = (p==='work') ? 'none' : 'inline-block';
+  $('fabAddBtn').classList.toggle('show', p!=='work' && window.innerWidth<=560);
+});
+
+/* ================= GOALS ================= */
+document.querySelectorAll('[data-goaltab]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-goaltab]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    goalTab = b.dataset.goaltab;
+    renderGoals();
+  });
+});
+
+function isOverdue(g){
+  if(g.completed || !g.deadline) return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return new Date(g.deadline+'T00:00:00') < today;
+}
+function daysLeft(g){
+  if(!g.deadline) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((new Date(g.deadline+'T00:00:00') - today)/86400000);
+}
+
+function renderGoals(){
+  let list = goals.slice();
+  if(goalTab==='active') list = list.filter(g=>!g.completed);
+  else if(goalTab==='short') list = list.filter(g=>g.type==='short' && !g.completed);
+  else if(goalTab==='long') list = list.filter(g=>g.type==='long' && !g.completed);
+  else if(goalTab==='completed') list = list.filter(g=>g.completed);
+  list.sort((a,b)=>{
+    if(goalTab==='completed') return new Date(b.completed_at||0)-new Date(a.completed_at||0);
+    const ao=isOverdue(a), bo=isOverdue(b);
+    if(ao!==bo) return ao?-1:1;
+    if(!a.deadline) return 1; if(!b.deadline) return -1;
+    return new Date(a.deadline)-new Date(b.deadline);
+  });
+  const grid = $('goalGrid');
+  grid.innerHTML = '';
+  $('goalEmpty').classList.toggle('hidden', list.length>0);
+  list.forEach(g=>grid.appendChild(goalCard(g)));
+  if(window.lucide) lucide.createIcons();
+}
+
+function goalCard(g){
+  const card = document.createElement('div');
+  const overdue = isOverdue(g);
+  card.className = 'goal-card'+(g.completed?' completed':'')+(overdue?' overdue':'');
+  const dleft = daysLeft(g);
+  let dateInfo = '';
+  if(g.completed) dateInfo = `<span class="icon-inline"><i data-lucide="flag" class="ic"></i>Done ${g.completed_at?fmtDate(g.completed_at.slice(0,10)):''}</span>`;
+  else if(g.deadline){
+    if(overdue) dateInfo = `<span class="icon-inline" style="color:var(--red)"><i data-lucide="alarm-clock" class="ic"></i>Overdue ${Math.abs(dleft)}d</span>`;
+    else if(dleft===0) dateInfo = `<span class="icon-inline" style="color:var(--yellow-dark)"><i data-lucide="alarm-clock" class="ic"></i>Due today</span>`;
+    else dateInfo = `<span class="icon-inline"><i data-lucide="alarm-clock" class="ic"></i>${dleft}d left</span>`;
+  }
+  card.innerHTML = `
+    ${g.completed?'<div class="completed-check"><i data-lucide="check" class="ic"></i></div>':''}
+    <div class="goal-top"><span class="badge ${g.type}">${g.type==='short'?'Short-term':'Long-term'}</span></div>
+    <h3 class="goal-title">${escapeHtml(g.title)}</h3>
+    <div class="goal-dates"><span class="icon-inline"><i data-lucide="calendar-range" class="ic"></i>${fmtDate(g.start_date)} → ${fmtDate(g.deadline)}</span>${dateInfo}</div>
+    <div class="progress-outer"><div class="progress-inner" style="width:${g.progress}%"></div></div>
+    <span class="progress-pct">${g.progress}%</span>
+    ${!g.completed?`<div class="progress-controls"><input type="range" min="0" max="100" value="${g.progress}" class="gSlider" data-id="${g.id}"></div>`:''}
+    <div class="goal-actions">
+      ${!g.completed?`<button class="btn btn-green btn-sm gComplete" data-id="${g.id}">Mark complete</button>`:`<button class="btn btn-grey btn-sm gReopen" data-id="${g.id}">Reopen</button>`}
+      <button class="btn btn-blue btn-sm gEdit" data-id="${g.id}">Edit</button>
+      <button class="btn btn-red btn-sm gDelete" data-id="${g.id}">Delete</button>
+    </div>`;
+  return card;
+}
+
+$('goalGrid').addEventListener('input', (e)=>{
+  if(e.target.classList.contains('gSlider')){
+    const g = goals.find(x=>x.id===e.target.dataset.id);
+    g.progress = parseInt(e.target.value,10);
+    const card = e.target.closest('.goal-card');
+    card.querySelector('.progress-inner').style.width = g.progress+'%';
+    card.querySelector('.progress-pct').textContent = g.progress+'%';
+  }
+});
+$('goalGrid').addEventListener('change', async (e)=>{
+  if(e.target.classList.contains('gSlider')){
+    const g = goals.find(x=>x.id===e.target.dataset.id);
+    await sb.from('goals').update({progress:g.progress}).eq('id', g.id);
+  }
+});
+$('goalGrid').addEventListener('click', async (e)=>{
+  const id = e.target.dataset.id; if(!id) return;
+  if(e.target.classList.contains('gComplete')){
+    await sb.from('goals').update({completed:true, progress:100, completed_at:new Date().toISOString()}).eq('id', id);
+    showToast('Goal completed!'); await loadGoals();
+  } else if(e.target.classList.contains('gReopen')){
+    await sb.from('goals').update({completed:false, completed_at:null}).eq('id', id);
+    await loadGoals();
+  } else if(e.target.classList.contains('gEdit')){
+    openGoalModal(id);
+  } else if(e.target.classList.contains('gDelete')){
+    if(deleteArmed[id]){
+      clearTimeout(deleteArmed[id]); delete deleteArmed[id];
+      await sb.from('goals').delete().eq('id', id);
+      showToast('Goal deleted'); await loadGoals();
+    } else {
+      e.target.textContent='Confirm?';
+      deleteArmed[id]=setTimeout(()=>{e.target.textContent='Delete'; delete deleteArmed[id];},2500);
+    }
+  }
+});
+
+document.querySelectorAll('#goalModalOverlay .type-toggle button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#goalModalOverlay .type-toggle button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); goalFormType = b.dataset.v;
+  });
+});
+$('gProgress').addEventListener('input', ()=>{ $('gProgressVal').textContent = $('gProgress').value+'%'; });
+
+function openGoalModal(id){
+  editingGoalId = id || null;
+  $('gErrTitle').classList.add('hidden'); $('gErrDate').classList.add('hidden');
+  if(id){
+    const g = goals.find(x=>x.id===id);
+    $('goalModalHeading').textContent = 'Edit goal';
+    $('gTitle').value = g.title; $('gStart').value = g.start_date||''; $('gDeadline').value = g.deadline||'';
+    $('gProgress').value = g.progress; $('gProgressVal').textContent = g.progress+'%';
+    goalFormType = g.type;
+  } else {
+    $('goalModalHeading').textContent = 'New goal';
+    $('gTitle').value=''; $('gStart').value = new Date().toISOString().slice(0,10);
+    $('gDeadline').value=''; $('gProgress').value=0; $('gProgressVal').textContent='0%';
+    goalFormType='short';
+  }
+  document.querySelectorAll('#goalModalOverlay .type-toggle button').forEach(b=>b.classList.toggle('active', b.dataset.v===goalFormType));
+  $('goalModalOverlay').classList.add('open');
+  setTimeout(()=>$('gTitle').focus(),50);
+}
+$('gCancelBtn').addEventListener('click', ()=>$('goalModalOverlay').classList.remove('open'));
+$('goalModalOverlay').addEventListener('click', (e)=>{ if(e.target.id==='goalModalOverlay') $('goalModalOverlay').classList.remove('open'); });
+
+$('gSaveBtn').addEventListener('click', async ()=>{
+  const title = $('gTitle').value.trim();
+  let valid = true;
+  if(!title){ $('gErrTitle').classList.remove('hidden'); valid=false; } else $('gErrTitle').classList.add('hidden');
+  if($('gStart').value && $('gDeadline').value && $('gDeadline').value < $('gStart').value){ $('gErrDate').classList.remove('hidden'); valid=false; } else $('gErrDate').classList.add('hidden');
+  if(!valid) return;
+  const progress = parseInt($('gProgress').value,10);
+  const payload = {
+    title, type: goalFormType, start_date: $('gStart').value || null, deadline: $('gDeadline').value || null,
+    progress, completed: progress>=100, completed_at: progress>=100 ? new Date().toISOString() : null
+  };
+  if(editingGoalId){
+    await sb.from('goals').update(payload).eq('id', editingGoalId);
+    showToast('Goal updated');
+  } else {
+    payload.user_id = session.user.id;
+    await sb.from('goals').insert(payload);
+    showToast('Goal added — you got this.');
+  }
+  $('goalModalOverlay').classList.remove('open');
+  await loadGoals();
+});
+
+/* ================= TODOS ================= */
+function renderTodos(){
+  const list = $('todoList'); list.innerHTML='';
+  $('todoEmpty').classList.toggle('hidden', todos.length>0);
+  todos.slice().sort((a,b)=> (a.done - b.done) || (new Date(b.created_at)-new Date(a.created_at))).forEach(t=>{
+    const el = document.createElement('div');
+    el.className = 'todo-item'+(t.done?' done':'');
+    el.innerHTML = `
+      <div class="todo-check ${t.done?'done':''}" data-id="${t.id}">${t.done?'<i data-lucide="check" class="ic"></i>':''}</div>
+      <div class="todo-body"><div class="todo-title">${escapeHtml(t.title)}</div>${t.due_date?`<div class="todo-due">Due ${fmtDate(t.due_date)}</div>`:''}</div>
+      <button class="btn btn-red btn-sm tDelete" data-id="${t.id}">Delete</button>`;
+    list.appendChild(el);
+  });
+  if(window.lucide) lucide.createIcons();
+}
+async function addTodo(){
+  const title = $('newTodoInput').value.trim();
+  if(!title) return;
+  $('newTodoInput').value='';
+  await sb.from('todos').insert({title, user_id: session.user.id});
+  await loadTodos();
+}
+$('addTodoBtn').addEventListener('click', addTodo);
+$('newTodoInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTodo(); });
+$('todoList').addEventListener('click', async (e)=>{
+  const checkEl = e.target.closest('.todo-check');
+  const delEl = e.target.closest('.tDelete');
+  if(checkEl){
+    const id = checkEl.dataset.id; if(!id) return;
+    const t = todos.find(x=>x.id===id);
+    await sb.from('todos').update({done: !t.done}).eq('id', id);
+    await loadTodos();
+  } else if(delEl){
+    const id = delEl.dataset.id; if(!id) return;
+    if(deleteArmed[id]){
+      clearTimeout(deleteArmed[id]); delete deleteArmed[id];
+      await sb.from('todos').delete().eq('id', id); await loadTodos();
+    } else {
+      delEl.textContent='Confirm?';
+      deleteArmed[id]=setTimeout(()=>{delEl.textContent='Delete'; delete deleteArmed[id];},2500);
+    }
+  }
+});
+
+/* ================= SCHEDULE ================= */
+function nextOccurrence(s){
+  const now = new Date(); now.setHours(0,0,0,0);
+  if(s.recurrence==='weekly'){
+    const d = new Date(now);
+    const diff = (s.day_of_week - d.getDay() + 7) % 7;
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+  if(s.recurrence==='monthly'){
+    let d = new Date(now.getFullYear(), now.getMonth(), s.day_of_month);
+    if(d < now) d = new Date(now.getFullYear(), now.getMonth()+1, s.day_of_month);
+    return d;
+  }
+  if(s.recurrence==='yearly'){
+    let d = new Date(now.getFullYear(), s.month-1, s.day_of_month);
+    if(d < now) d = new Date(now.getFullYear()+1, s.month-1, s.day_of_month);
+    return d;
+  }
+}
+function renderSchedules(){
+  const list = $('schedList'); list.innerHTML='';
+  $('schedEmpty').classList.toggle('hidden', schedules.length>0);
+  schedules.slice().sort((a,b)=> nextOccurrence(a)-nextOccurrence(b)).forEach(s=>{
+    const next = nextOccurrence(s);
+    const el = document.createElement('div');
+    el.className = 'sched-card';
+    el.innerHTML = `
+      <div class="sched-info">
+        <div class="goal-top"><span class="badge ${s.recurrence}">${s.recurrence}</span></div>
+        <div class="goal-title" style="font-size:16px;">${escapeHtml(s.title)}</div>
+        <div class="sched-time">${s.time_of_day ? s.time_of_day.slice(0,5) : ''} ${s.notes?'· '+escapeHtml(s.notes):''}</div>
+        <div class="sched-next">Next: ${next.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</div>
+      </div>
+      <button class="btn btn-red btn-sm sDelete" data-id="${s.id}">Delete</button>`;
+    list.appendChild(el);
+  });
+  if(window.lucide) lucide.createIcons();
+}
+$('schedList').addEventListener('click', async (e)=>{
+  const id = e.target.dataset.id; if(!id) return;
+  if(e.target.classList.contains('sDelete')){
+    if(deleteArmed[id]){
+      clearTimeout(deleteArmed[id]); delete deleteArmed[id];
+      await sb.from('schedules').delete().eq('id', id); await loadSchedules();
+    } else {
+      e.target.textContent='Confirm?';
+      deleteArmed[id]=setTimeout(()=>{e.target.textContent='Delete'; delete deleteArmed[id];},2500);
+    }
+  }
+});
+
+document.querySelectorAll('#schedModalOverlay .type-toggle button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#schedModalOverlay .type-toggle button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); schedFormType = b.dataset.v;
+    $('sWeeklyField').classList.toggle('hidden', schedFormType!=='weekly');
+    $('sMonthlyField').classList.toggle('hidden', schedFormType!=='monthly');
+    $('sYearlyField').classList.toggle('hidden', schedFormType!=='yearly');
+  });
+});
+function openSchedModal(){
+  $('sTitle').value=''; $('sNotes').value=''; $('sTime').value='';
+  $('sErrTitle').classList.add('hidden');
+  schedFormType='weekly';
+  document.querySelectorAll('#schedModalOverlay .type-toggle button').forEach(b=>b.classList.toggle('active', b.dataset.v==='weekly'));
+  $('sWeeklyField').classList.remove('hidden'); $('sMonthlyField').classList.add('hidden'); $('sYearlyField').classList.add('hidden');
+  $('schedModalOverlay').classList.add('open');
+  setTimeout(()=>$('sTitle').focus(),50);
+}
+$('sCancelBtn').addEventListener('click', ()=>$('schedModalOverlay').classList.remove('open'));
+$('schedModalOverlay').addEventListener('click', (e)=>{ if(e.target.id==='schedModalOverlay') $('schedModalOverlay').classList.remove('open'); });
+$('sSaveBtn').addEventListener('click', async ()=>{
+  const title = $('sTitle').value.trim();
+  if(!title){ $('sErrTitle').classList.remove('hidden'); return; }
+  const payload = { title, recurrence: schedFormType, time_of_day: $('sTime').value || null, notes: $('sNotes').value.trim()||null, user_id: session.user.id };
+  if(schedFormType==='weekly') payload.day_of_week = parseInt($('sDayOfWeek').value,10);
+  if(schedFormType==='monthly') payload.day_of_month = parseInt($('sDayOfMonth').value,10);
+  if(schedFormType==='yearly'){ payload.month = parseInt($('sMonth').value,10); payload.day_of_month = parseInt($('sYearDay').value,10); }
+  await sb.from('schedules').insert(payload);
+  showToast('Schedule item added');
+  $('schedModalOverlay').classList.remove('open');
+  await loadSchedules();
+});
+
+/* ================= WORK SESSIONS ================= */
+function activeSession(){ return sessions.find(s=>!s.end_time); }
+function fmtDur(ms){
+  const s = Math.max(0, Math.floor(ms/1000));
+  const h = String(Math.floor(s/3600)).padStart(2,'0');
+  const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const sec = String(s%60).padStart(2,'0');
+  return `${h}:${m}:${sec}`;
+}
+function renderWork(){
+  const active = activeSession();
+  $('nowWorkingBlock').classList.toggle('hidden', !active);
+  $('startWorkBlock').classList.toggle('hidden', !!active);
+  if(active){
+    $('nowJobName').textContent = active.job_name;
+    $('nowSince').textContent = 'Since ' + new Date(active.start_time).toLocaleString();
+  }
+  const list = $('sessionList'); list.innerHTML='';
+  const past = sessions.filter(s=>s.end_time);
+  $('sessionEmpty').classList.toggle('hidden', past.length>0 || !!active);
+  past.forEach(s=>{
+    const dur = new Date(s.end_time) - new Date(s.start_time);
+    const el = document.createElement('div');
+    el.className='session-card';
+    el.innerHTML = `
+      <div><div class="session-job">${escapeHtml(s.job_name)}</div>
+      <div class="session-time">${new Date(s.start_time).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})} → ${new Date(s.end_time).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}</div></div>
+      <div class="session-dur">${fmtDur(dur)}</div>`;
+    list.appendChild(el);
+  });
+}
+function startTimerLoop(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    const active = activeSession();
+    if(active) $('nowTimer').textContent = fmtDur(new Date() - new Date(active.start_time));
+  }, 1000);
+}
+$('startWorkBtn').addEventListener('click', async ()=>{
+  const job = $('newJobInput').value.trim();
+  if(!job){ showToast("Enter what you're starting"); return; }
+  const active = activeSession();
+  if(active) await sb.from('work_sessions').update({end_time:new Date().toISOString()}).eq('id', active.id);
+  await sb.from('work_sessions').insert({job_name: job, user_id: session.user.id});
+  $('newJobInput').value='';
+  showToast('Started: ' + job);
+  await loadSessions();
+});
+$('stopWorkBtn').addEventListener('click', async ()=>{
+  const active = activeSession();
+  if(!active) return;
+  await sb.from('work_sessions').update({end_time:new Date().toISOString()}).eq('id', active.id);
+  showToast('Stopped work');
+  await loadSessions();
+});
+
+/* ================= ADD BUTTON (context aware) ================= */
+function currentPanel(){ return document.querySelector('.panel.active').id.replace('panel-',''); }
+function openAddForCurrentPanel(){
+  const p = currentPanel();
+  if(p==='goals') openGoalModal(null);
+  else if(p==='schedule') openSchedModal();
+  else if(p==='todos') $('newTodoInput').focus();
+}
+$('addBtn').addEventListener('click', openAddForCurrentPanel);
+$('fabAddBtn').addEventListener('click', openAddForCurrentPanel);
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Escape'){
+    $('goalModalOverlay').classList.remove('open');
+    $('schedModalOverlay').classList.remove('open');
+  }
+});
+</script>
+</body>
+</html>
