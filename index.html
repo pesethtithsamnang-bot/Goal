@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- Updated viewport to disable zoom on mobile -->
+<!-- Viewport lock -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SKETING</title>
 <meta name="theme-color" content="#F59E0B">
@@ -67,8 +67,7 @@
   </div>
 
   <!-- ---------- GOALS ---------- -->
-  <!-- Added app-section class here -->
-  <div class="panel active app-section" id="panel-goals">
+  <div class="panel active" id="panel-goals">
     <div class="segmented" style="margin-bottom:16px;">
       <button data-goaltab="active" class="active">In progress</button>
       <button data-goaltab="short">Short-term</button>
@@ -80,8 +79,7 @@
   </div>
 
   <!-- ---------- FINANCE ---------- -->
-  <!-- Added app-section class here -->
-  <div class="panel app-section" id="panel-finance">
+  <div class="panel" id="panel-finance">
     <div class="finance-dashboard">
       <div class="stat-box"><div class="stat-label">Income (Mo)</div><div class="stat-val val-pos" id="finIncMo">$0</div></div>
       <div class="stat-box"><div class="stat-label">Expenses (Mo)</div><div class="stat-val val-neg" id="finExpMo">$0</div></div>
@@ -144,15 +142,13 @@
   </div>
 
   <!-- ---------- SCHEDULE ---------- -->
-  <!-- Added app-section class here -->
-  <div class="panel app-section" id="panel-schedule">
+  <div class="panel" id="panel-schedule">
     <div class="sched-list" id="schedList"></div>
     <div class="empty-state hidden" id="schedEmpty"><h3>Nothing scheduled yet</h3><p>Add anything with a start date, an optional end date (deadline), and a time — from a single meeting to a plan spanning months or years.</p></div>
   </div>
 
   <!-- ---------- WORK ---------- -->
-  <!-- Added app-section class here -->
-  <div class="panel app-section" id="panel-work">
+  <div class="panel" id="panel-work">
     <div class="card" style="margin-bottom:18px;padding:0;overflow:hidden;">
       <div id="nowWorkingBlock" class="now-working hidden">
         <div class="job" id="nowJobName"></div>
@@ -171,8 +167,7 @@
   </div>
 
   <!-- ---------- TODOS ---------- -->
-  <!-- Added app-section class here -->
-  <div class="panel app-section" id="panel-todos">
+  <div class="panel" id="panel-todos">
     <div class="add-todo-row">
       <input type="text" id="newTodoInput" placeholder="Add a todo and press Enter...">
       <button class="btn btn-blue" id="addTodoBtn">Add</button>
@@ -182,8 +177,7 @@
   </div>
 
   <!-- ---------- SETTINGS ---------- -->
-  <!-- Added app-section class here -->
-  <div class="panel app-section" id="panel-settings">
+  <div class="panel" id="panel-settings">
     <div class="settings-section card">
       <h3><i data-lucide="wallet" class="ic"></i> Accounts</h3>
       <p class="field-hint" style="margin-bottom:14px;">Moving money between your own accounts (e.g. Bank → Savings) is a transfer — it never counts as an expense.</p>
