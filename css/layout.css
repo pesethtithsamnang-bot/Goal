@@ -29,6 +29,17 @@
 .panel{display:none;}
 .panel.active{display:block;}
 
+/* --- APP SECTION FRAME --- */
+.app-section {
+  background: var(--grey-card);
+  border: 2px solid var(--grey-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05); /* Soft drop shadow for app feel */
+  padding: 24px;
+  margin: 0 auto 24px auto; /* Centers the frame */
+  max-width: 800px;
+}
+
 /* ---- generic grids ---- */
 .goal-grid,.todo-list,.sched-list,.session-list,.finance-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
 .todo-list,.sched-list,.session-list,.finance-list{grid-template-columns:1fr;}
@@ -59,6 +70,13 @@
   .fin-filters select,.fin-filters input{flex:1;}
   .modal{padding:20px;}
   body{padding-bottom:90px;}
+  
+  /* --- App section mobile adjustments --- */
+  .app-section {
+    padding: 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+  }
 }
 @media (min-width: 641px){
   .fab{display:none !important;}
