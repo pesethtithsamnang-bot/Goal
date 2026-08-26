@@ -10,5 +10,12 @@
 @keyframes sk-fade-in{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
 
 .modal-overlay .modal{will-change:transform;}
-.goal-card,.todo-item,.sched-card,.session-card,.finance-item{animation:sk-pop .18s ease;}
-@keyframes sk-pop{ from{opacity:0; transform:scale(.97);} to{opacity:1; transform:scale(1);} }
+
+/* --- THE GLITCH FIX --- */
+/* Changed from sk-pop (scaling) to a smooth fade. This stops the layout from stuttering when switching tabs */
+.goal-card,.todo-item,.sched-card,.session-card,.finance-item{animation:sk-card-fade .12s ease forwards;}
+
+@keyframes sk-card-fade{ 
+    from { opacity: 0; } 
+    to { opacity: 1; } 
+}
