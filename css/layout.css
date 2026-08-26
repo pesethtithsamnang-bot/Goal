@@ -22,7 +22,8 @@
 .tab-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
 .segmented{display:flex;background:var(--grey-card);border:2px solid var(--grey-border);border-radius:999px;padding:4px;gap:4px;flex-wrap:wrap;}
 .segmented button{border:none;background:transparent;font-family:var(--font-display);font-weight:700;font-size:14px;
-  color:var(--ink-soft);padding:9px 16px;border-radius:999px;cursor:pointer;transition:all .15s ease;}
+  color:var(--ink-soft);padding:9px 16px;border-radius:999px;cursor:pointer;
+  transition:background-color .15s ease, color .15s ease;}
 .segmented button.active{background:var(--orange);color:var(--white);}
 
 /* ---- panels (see animations.css for transition classes) ---- */
