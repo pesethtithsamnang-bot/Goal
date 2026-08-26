@@ -17,7 +17,7 @@ html,body{
   padding:0;
   /* --- MOBILE GLITCH FIXES --- */
   overflow-x:hidden;
-  overflow-y:scroll; /* This stops the horizontal glitching when switching tabs */
+  overflow-y:scroll; /* Stop horizontal shift */
   -webkit-tap-highlight-color:transparent;
   overscroll-behavior-y:none;
   width:100%;
