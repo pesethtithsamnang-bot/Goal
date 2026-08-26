@@ -11,7 +11,17 @@
   --font-display:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;
 }
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;}
+
+html,body{
+  margin:0;
+  padding:0;
+  /* --- MOBILE GLITCH FIXES --- */
+  overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:none;
+  width:100%;
+}
+
 body{background:var(--grey-bg);font-family:var(--font-body);color:var(--ink);min-height:100vh;padding-bottom:40px;}
 .wrap{max-width:960px;margin:0 auto;padding:24px 20px 0;}
 h1,h2,h3,h4{font-family:var(--font-display);margin:0;}
